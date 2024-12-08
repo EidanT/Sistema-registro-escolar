@@ -673,73 +673,64 @@ namespace SistemaRegistroActividades
             }
         }
 
+        
 
-        private static void ModifyScore()
+
+        public static void ModifyScore()
         {
-            // Mostrar el listado de estudiantes con su ID, nombre y calificación
-            List<Student> students = dbConnection.GetStudents();
-            if (students.Count == 0)
+            // Obtener lista de estudiantes que están en alguna actividad junto con sus calificaciones
+            List<StudentActivityScore> studentsInActivitiesWithScores = dbConnection.GetStudentsInActivitiesWithScores();
+
+            // Verificar si hay estudiantes para mostrar
+            if (studentsInActivitiesWithScores.Count == 0)
             {
-                Console.WriteLine("No hay estudiantes registrados.");
+                Console.WriteLine("No hay estudiantes registrados en actividades.");
                 return;
             }
 
-            Console.WriteLine("Listado de Estudiantes:");
-            foreach (var student in students)
+            // Mostrar la lista de estudiantes con ID, nombre, actividad y calificación
+            Console.WriteLine("Estudiantes en actividades:");
+            foreach (var studentActivity in studentsInActivitiesWithScores)
             {
-                // Obtener la calificación promedio del estudiante de todos sus participantes
-                List<Participant> studentParticipants = dbConnection.GetParticipantsByStudentId(student.id);
-                decimal averageScore = studentParticipants.Count > 0
-                    ? studentParticipants.Average(p => p.score) // Promedio de calificación de los participantes
-                    : 0;
-                
-                Console.WriteLine($"ID: {student.id}, Nombre: {student.name} {student.lastname}, Calificación: {averageScore}");
+                Console.WriteLine($"ID: {studentActivity.StudentId}, Nombre: {studentActivity.StudentName} {studentActivity.StudentLastName}, Actividad: {studentActivity.ActivityName}, Calificación: {studentActivity.Score}");
             }
 
-            // Solicitar el ID del estudiante
-            int studentId = GetValidIntInput("\nIngrese el ID del estudiante: ");
+            // Solicitar el ID del estudiante cuya calificación se desea modificar
+            Console.WriteLine("Ingrese el ID del estudiante para modificar su calificación (o deje vacío para volver):");
+            string input = Console.ReadLine();
 
-            // Verificar si el estudiante existe
-            Student selectedStudent = dbConnection.GetStudentById(studentId);
+            if (string.IsNullOrEmpty(input))
+            {
+                return; // Volver atrás si el campo está vacío
+            }
+
+            int studentId = int.Parse(input);
+
+            // Buscar el estudiante seleccionado en la lista
+            var selectedStudent = studentsInActivitiesWithScores.FirstOrDefault(s => s.StudentId == studentId);
+
             if (selectedStudent == null)
             {
                 Console.WriteLine("Estudiante no encontrado.");
                 return;
             }
 
-            // Mostrar el listado de participantes para este estudiante
-            List<Participant> participants = dbConnection.GetParticipantsByStudentId(studentId);
-            if (participants.Count == 0)
-            {
-                Console.WriteLine("Este estudiante no tiene participa en ninguna actividad.");
-                return;
-            }
-
-            Console.WriteLine("\nListado de Participantes del Estudiante:");
-            foreach (var participant in participants)
-            {
-                Activity activity = dbConnection.GetActivityById(participant.activity_id);
-                Console.WriteLine($"ID: {participant.id}, Actividad: {activity.name}, Calificación: {participant.score}");
-            }
-
-            // Solicitar el ID del participante a modificar
-            int participantId = GetValidIntInput("\nIngrese el ID del participante cuya calificación desea modificar: ");
-
-            // Obtener el participante por su ID
-            Participant participantToEdit = dbConnection.GetParticipantById(participantId);
-            if (participantToEdit == null)
-            {
-                Console.WriteLine("Participante no encontrado.");
-                return;
-            }
-
             // Solicitar la nueva calificación
-            decimal newScore = GetValidDecimalInput("Ingrese la nueva calificación: ");
+            Console.WriteLine("Ingrese la nueva calificación:");
+            decimal newGrade;
+            if (!decimal.TryParse(Console.ReadLine(), out newGrade))
+            {
+                Console.WriteLine("Calificación no válida.");
+                return;
+            }
 
-            // Modificar la calificación en la base de datos
-            dbConnection.ModifyScore(participantId, newScore);
+            // Actualizar la calificación en la base de datos
+            dbConnection.UpdateStudentGrade(selectedStudent.StudentId, newGrade);
             Console.WriteLine("Calificación modificada exitosamente.");
         }
+
+
+
 
 
 

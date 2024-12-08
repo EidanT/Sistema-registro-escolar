@@ -177,6 +177,115 @@ namespace SistemaRegistroActividades
             }
         }
 
+        public void UpdateScore(int studentId, string activityName, decimal newScore)
+        {
+            using (MySqlConnection connection = new MySqlConnection(_connectionString))
+            {
+                connection.Open();
+                string query = "UPDATE participants SET score = @score WHERE student_id = @studentId AND activity_id = (SELECT id FROM activities WHERE name = @name)";
+                
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                cmd.Parameters.AddWithValue("@score", newScore);
+                cmd.Parameters.AddWithValue("@studentId", studentId);
+                cmd.Parameters.AddWithValue("@activityName", activityName);
+
+                int rowsAffected = cmd.ExecuteNonQuery();
+                if (rowsAffected == 0)
+                {
+                    Console.WriteLine("No se encontró la actividad o estudiante.");
+                }
+            }
+        }
+
+
+        public List<Student> GetStudentsInActivities()
+        {
+            List<Student> students = new List<Student>();
+
+            using (MySqlConnection connection = new MySqlConnection(_connectionString))
+            {
+                connection.Open();
+                string query = @"
+                    SELECT s.id, s.name, s.lastname, s.age, s.email
+                    FROM students s
+                    JOIN participants p ON s.id = p.student_id
+                    WHERE p.activity_id IS NOT NULL"; // Asegura que solo se seleccionen estudiantes con una actividad asignada
+
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                MySqlDataReader reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    students.Add(new Student
+                    {
+                        id = reader.GetInt32("id"),
+                        name = reader.GetString("name"),
+                        lastname = reader.GetString("lastname"),
+                        age = reader.GetInt32("age"),
+                        email = reader.GetString("email")
+                    });
+                }
+            }
+
+            return students;
+        }
+
+        public List<StudentActivityScore> GetStudentsInActivitiesWithScores()
+        {
+            List<StudentActivityScore> studentActivityScores = new List<StudentActivityScore>();
+
+            using (MySqlConnection connection = new MySqlConnection(_connectionString))
+            {
+                connection.Open();
+                string query = @"
+                    SELECT 
+                        s.id AS StudentId,
+                        s.name AS StudentName,
+                        s.lastname AS StudentLastName,
+                        a.name AS ActivityName,
+                        ap.score AS Score
+                    FROM participants ap
+                    JOIN students s ON ap.student_id = s.id
+                    JOIN activities a ON ap.activity_id = a.id";
+
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                MySqlDataReader reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    StudentActivityScore score = new StudentActivityScore
+                    {
+                        StudentId = reader.GetInt32("StudentId"),
+                        StudentName = reader.GetString("StudentName"),
+                        StudentLastName = reader.GetString("StudentLastName"),
+                        ActivityName = reader.GetString("ActivityName"),
+                        Score = reader.GetDecimal("Score")
+                    };
+
+                    studentActivityScores.Add(score);
+                }
+            }
+
+            return studentActivityScores;
+        }
+
+
+        
+
+    // Método para actualizar la calificación de un estudiante
+        public void UpdateStudentGrade(int studentId, decimal newGrade)
+        {
+            using (MySqlConnection connection = new MySqlConnection(_connectionString))
+            {
+                connection.Open();
+                string query = "UPDATE participants SET score = @score WHERE student_id = @studentId";
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                cmd.Parameters.AddWithValue("@score", newGrade);
+                cmd.Parameters.AddWithValue("@studentId", studentId);
+                cmd.ExecuteNonQuery();
+            }
+        }
+
         // Métodos de obtención de datos (sin cambios)
         public List<Student> GetStudents()
         {
