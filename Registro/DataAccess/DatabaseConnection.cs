@@ -269,6 +269,50 @@ namespace SistemaRegistroActividades
             return studentActivityScores;
         }
 
+        public List<SchoolStudent> GetAllStudents()
+        {
+            List<SchoolStudent> students = new List<SchoolStudent>();
+            using (MySqlConnection connection = new MySqlConnection(_connectionString))
+            {
+                connection.Open();
+                string query = "SELECT id, name, lastname, age, email FROM students";
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                MySqlDataReader reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    SchoolStudent student = new SchoolStudent
+                    {
+                        id = reader.GetInt32("id"),
+                        name = reader.GetString("name"),
+                        lastname = reader.GetString("lastname"),
+                        age = reader.GetInt32("age"),
+                        email = reader.GetString("email")
+                    };
+                    students.Add(student);
+                }
+            }
+            return students;
+        }
+
+        public void UpdateStudent(SchoolStudent student)
+        {
+            using (MySqlConnection connection = new MySqlConnection(_connectionString))
+            {
+                connection.Open();
+                string query = "UPDATE students SET name = @name, lastname = @lastname, age = @age, email = @email WHERE id = @id";
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                
+                cmd.Parameters.AddWithValue("@name", student.name);
+                cmd.Parameters.AddWithValue("@lastname", student.lastname);
+                cmd.Parameters.AddWithValue("@age", student.age);
+                cmd.Parameters.AddWithValue("@email", student.email);
+                cmd.Parameters.AddWithValue("@id", student.id);
+                
+                cmd.ExecuteNonQuery();
+            }
+        }
+
 
         
 

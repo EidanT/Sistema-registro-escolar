@@ -126,59 +126,79 @@ namespace SistemaRegistroActividades
             Console.WriteLine("Estudiante agregado exitosamente.");
         }
 
-        private static void EditStudent()
+        public static void EditStudent()
         {
-            // Mostrar un listado de todos los estudiantes
-            List<Student> students = dbConnection.GetStudents();
+            // Obtener lista de estudiantes
+            List<SchoolStudent> students = dbConnection.GetAllStudents();
+
+            // Verificar si hay estudiantes para mostrar
             if (students.Count == 0)
             {
                 Console.WriteLine("No hay estudiantes registrados.");
                 return;
             }
 
-            Console.WriteLine("Listado de estudiantes:");
+            // Mostrar la lista de estudiantes con ID, nombre, apellido, edad y email
+            Console.WriteLine("Estudiantes registrados:");
             foreach (var student in students)
             {
                 Console.WriteLine($"ID: {student.id}, Nombre: {student.name} {student.lastname}, Edad: {student.age}, Email: {student.email}");
             }
 
-            // Solicitar al usuario el ID del estudiante que desea editar
-            Console.Write("Ingrese el ID del estudiante a editar (deje vacío para volver): ");
+            // Solicitar el ID del estudiante a editar
+            Console.WriteLine("Ingrese el ID del estudiante a editar (o deje vacío para volver):");
             string input = Console.ReadLine();
 
-            // Verificar si el campo está vacío
-            if (string.IsNullOrWhiteSpace(input))
+            if (string.IsNullOrEmpty(input))
             {
-                Console.WriteLine("Volviendo al menú anterior...");
-                return;
+                return; // Volver atrás si el campo está vacío
             }
 
-            // Validar el ID ingresado
-            if (!int.TryParse(input, out int id))
-            {
-                Console.WriteLine("ID inválido. Por favor, ingrese un número.");
-                return;
-            }
+            int studentId = int.Parse(input);
 
-            // Verificar si el estudiante existe
-            Student studentToEdit = students.FirstOrDefault(s => s.id == id);
-            if (studentToEdit == null)
+            // Buscar el estudiante seleccionado en la lista
+            var selectedStudent = students.FirstOrDefault(s => s.id == studentId);
+
+            if (selectedStudent == null)
             {
                 Console.WriteLine("Estudiante no encontrado.");
                 return;
             }
 
-            // Pedir los nuevos datos para el estudiante
-            string newName = GetValidStringInput("Ingrese el nuevo nombre del estudiante: ");
-            string newLastname = GetValidStringInput("Ingrese el nuevo apellido del estudiante: ");
-            int newAge = GetValidIntInput("Ingrese la nueva edad del estudiante: ");
-            string newEmail = GetValidStringInput("Ingrese el nuevo email del estudiante: ");
+            // Mostrar los datos actuales del estudiante
+            Console.WriteLine($"Nombre actual: {selectedStudent.name}");
+            Console.WriteLine($"Apellido actual: {selectedStudent.lastname}");
+            Console.WriteLine($"Edad actual: {selectedStudent.age}");
+            Console.WriteLine($"Email actual: {selectedStudent.email}");
 
-            // Actualizar el estudiante en la base de datos
-            dbConnection.EditStudent(id, newName, newLastname, newAge, newEmail);
+            // Solicitar el nuevo nombre (o dejar vacío para mantener el valor actual)
+            Console.WriteLine("Ingrese el nuevo nombre (o deje vacío para conservar el actual):");
+            string newName = Console.ReadLine();
+            if (!string.IsNullOrEmpty(newName)) selectedStudent.name = newName;
 
-            Console.WriteLine("Estudiante editado exitosamente.");
+            // Solicitar el nuevo apellido (o dejar vacío para mantener el valor actual)
+            Console.WriteLine("Ingrese el nuevo apellido (o deje vacío para conservar el actual):");
+            string newLastname = Console.ReadLine();
+            if (!string.IsNullOrEmpty(newLastname)) selectedStudent.lastname = newLastname;
+
+            // Solicitar la nueva edad (o dejar vacío para mantener el valor actual)
+            Console.WriteLine("Ingrese la nueva edad (o deje vacío para conservar el actual):");
+            string newAgeInput = Console.ReadLine();
+            if (!string.IsNullOrEmpty(newAgeInput) && int.TryParse(newAgeInput, out int newAge))
+            {
+                selectedStudent.age = newAge;
+            }
+
+            // Solicitar el nuevo email (o dejar vacío para mantener el valor actual)
+            Console.WriteLine("Ingrese el nuevo email (o deje vacío para conservar el actual):");
+            string newEmail = Console.ReadLine();
+            if (!string.IsNullOrEmpty(newEmail)) selectedStudent.email = newEmail;
+
+            // Actualizar los datos del estudiante en la base de datos
+            dbConnection.UpdateStudent(selectedStudent);
+            Console.WriteLine("Estudiante actualizado exitosamente.");
         }
+
 
 
 
