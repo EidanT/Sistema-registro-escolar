@@ -97,6 +97,32 @@ namespace SistemaRegistroActividades
             }
         }
 
+        
+
+        public bool UpdateActivity(int activityId, string newName, DateTime? newDate)
+        {
+            using (MySqlConnection connection = new MySqlConnection(_connectionString))
+            {
+                connection.Open();
+                
+                // Preparamos la consulta SQL para actualizar el nombre y la fecha
+                string query = "UPDATE activities SET name = @name, date = @date WHERE id = @id";
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                
+                // Establecemos los parámetros para el nombre y la fecha
+                cmd.Parameters.AddWithValue("@id", activityId);
+                cmd.Parameters.AddWithValue("@name", string.IsNullOrEmpty(newName) ? (object)DBNull.Value : newName);
+                cmd.Parameters.AddWithValue("@date", newDate.HasValue ? (object)newDate.Value : DBNull.Value);
+
+                // Ejecutamos el comando
+                int rowsAffected = cmd.ExecuteNonQuery();
+
+                // Si rowsAffected es mayor que 0, significa que la actualización fue exitosa
+                return rowsAffected > 0;
+            }
+        }
+
+
         // Métodos de gestión para participantes
         public void AddParticipant(int studentId, int activityId)
         {
@@ -245,21 +271,27 @@ namespace SistemaRegistroActividades
             using (MySqlConnection connection = new MySqlConnection(_connectionString))
             {
                 connection.Open();
-                string query = "SELECT name FROM activities WHERE id = @id";
+                // Consulta que incluye la fecha
+                string query = "SELECT name, date FROM activities WHERE id = @id";
                 MySqlCommand cmd = new MySqlCommand(query, connection);
                 cmd.Parameters.AddWithValue("@id", activityId);
                 MySqlDataReader reader = cmd.ExecuteReader();
 
                 if (reader.Read())
                 {
+                    // Asegúrate de manejar el valor de la fecha correctamente
+                    DateTime activityDate = reader.IsDBNull(reader.GetOrdinal("date")) ? DateTime.MinValue : reader.GetDateTime("date");
+
                     return new Activity
                     {
-                        name = reader.GetString("name")
+                        name = reader.GetString("name"),
+                        date = activityDate // Asigna la fecha recuperada
                     };
                 }
             }
-            return null;
+            return null; // Si no se encuentra la actividad
         }
+
 
         public Participant GetParticipantById(int id)
         {

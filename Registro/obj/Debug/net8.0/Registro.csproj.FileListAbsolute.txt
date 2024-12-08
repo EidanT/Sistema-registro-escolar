@@ -35,3 +35,4 @@ C:\Users\Eidan\Desktop\Sistema registro escolar\Registro\obj\Debug\net8.0\refint
 C:\Users\Eidan\Desktop\Sistema registro escolar\Registro\obj\Debug\net8.0\Registro.pdb
 C:\Users\Eidan\Desktop\Sistema registro escolar\Registro\obj\Debug\net8.0\Registro.genruntimeconfig.cache
 C:\Users\Eidan\Desktop\Sistema registro escolar\Registro\obj\Debug\net8.0\ref\Registro.dll
+C:\Users\Eidan\Desktop\Sistema registro escolar\Registro\obj\Debug\net8.0\Registro.sourcelink.json
