@@ -13,7 +13,6 @@ namespace SistemaRegistroActividades
             _connectionString = connectionString;
         }
 
-        // Métodos de gestión para estudiantes
         public void AddStudent(string name, string lastname, int age, string email)
         {
             using (MySqlConnection connection = new MySqlConnection(_connectionString))
@@ -57,7 +56,6 @@ namespace SistemaRegistroActividades
             }
         }
 
-        // Métodos de gestión para actividades
         public void AddActivity(string name, DateTime date)
         {
             using (MySqlConnection connection = new MySqlConnection(_connectionString))
@@ -105,25 +103,20 @@ namespace SistemaRegistroActividades
             {
                 connection.Open();
                 
-                // Preparamos la consulta SQL para actualizar el nombre y la fecha
                 string query = "UPDATE activities SET name = @name, date = @date WHERE id = @id";
                 MySqlCommand cmd = new MySqlCommand(query, connection);
                 
-                // Establecemos los parámetros para el nombre y la fecha
                 cmd.Parameters.AddWithValue("@id", activityId);
                 cmd.Parameters.AddWithValue("@name", string.IsNullOrEmpty(newName) ? (object)DBNull.Value : newName);
                 cmd.Parameters.AddWithValue("@date", newDate.HasValue ? (object)newDate.Value : DBNull.Value);
 
-                // Ejecutamos el comando
                 int rowsAffected = cmd.ExecuteNonQuery();
 
-                // Si rowsAffected es mayor que 0, significa que la actualización fue exitosa
                 return rowsAffected > 0;
             }
         }
 
 
-        // Métodos de gestión para participantes
         public void AddParticipant(int studentId, int activityId)
         {
             using (MySqlConnection connection = new MySqlConnection(_connectionString))
@@ -163,7 +156,6 @@ namespace SistemaRegistroActividades
             }
         }
 
-        // Modificar la calificación de un participante
         public void ModifyScore(int id, decimal score)
         {
             using (MySqlConnection connection = new MySqlConnection(_connectionString))
@@ -209,7 +201,7 @@ namespace SistemaRegistroActividades
                     SELECT s.id, s.name, s.lastname, s.age, s.email
                     FROM students s
                     JOIN participants p ON s.id = p.student_id
-                    WHERE p.activity_id IS NOT NULL"; // Asegura que solo se seleccionen estudiantes con una actividad asignada
+                    WHERE p.activity_id IS NOT NULL"; 
 
                 MySqlCommand cmd = new MySqlCommand(query, connection);
                 MySqlDataReader reader = cmd.ExecuteReader();
@@ -316,7 +308,6 @@ namespace SistemaRegistroActividades
 
         
 
-    // Método para actualizar la calificación de un estudiante
         public void UpdateStudentGrade(int studentId, decimal newGrade)
         {
             using (MySqlConnection connection = new MySqlConnection(_connectionString))
@@ -330,7 +321,6 @@ namespace SistemaRegistroActividades
             }
         }
 
-        // Métodos de obtención de datos (sin cambios)
         public List<Student> GetStudents()
         {
             List<Student> students = new List<Student>();
@@ -424,7 +414,6 @@ namespace SistemaRegistroActividades
             using (MySqlConnection connection = new MySqlConnection(_connectionString))
             {
                 connection.Open();
-                // Consulta que incluye la fecha
                 string query = "SELECT name, date FROM activities WHERE id = @id";
                 MySqlCommand cmd = new MySqlCommand(query, connection);
                 cmd.Parameters.AddWithValue("@id", activityId);
@@ -432,17 +421,16 @@ namespace SistemaRegistroActividades
 
                 if (reader.Read())
                 {
-                    // Asegúrate de manejar el valor de la fecha correctamente
                     DateTime activityDate = reader.IsDBNull(reader.GetOrdinal("date")) ? DateTime.MinValue : reader.GetDateTime("date");
 
                     return new Activity
                     {
                         name = reader.GetString("name"),
-                        date = activityDate // Asigna la fecha recuperada
+                        date = activityDate 
                     };
                 }
             }
-            return null; // Si no se encuentra la actividad
+            return null; 
         }
 
 
@@ -459,7 +447,6 @@ namespace SistemaRegistroActividades
                     {
                         if (reader.Read())
                         {
-                            // Aquí debes mapear los campos de la base de datos al objeto Participant
                             return new Participant
                             {
                                 id = reader.GetInt32("id"),
@@ -470,7 +457,7 @@ namespace SistemaRegistroActividades
                         }
                         else
                         {
-                            return null; // Si no se encuentra el participante
+                            return null; 
                         }
                     }
                 }
